@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "author": "Felipe Simao",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-s3-devkitc-1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-led", "id": "led1", "top": 6, "left": 147.8, "attrs": { "color": "red" } },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 147.95,
+      "left": 134.4,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 176.75,
+      "left": 134.4,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": 195.95,
+      "left": 134.4,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": 92.4,
+      "left": 147.8,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": 44.4,
+      "left": 147.8,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 236.6,
+      "left": -144,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r4",
+      "top": 301,
+      "left": -183.25,
+      "rotate": 270,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "ldr1",
+      "top": 118.4,
+      "left": -268,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "led3:C", "r3:1", "black", [ "h-28.32", "v172.8", "h-134.48" ] ],
+    [ "esp:9", "led3:A", "yellow", [ "h-43.48", "v143.82", "h355.2", "v-86.4" ] ],
+    [ "r2:1", "esp:GND.4", "black", [ "v0" ] ],
+    [ "r2:2", "led2:C", "black", [ "v0" ] ],
+    [ "r1:2", "led1:C", "black", [ "v0" ] ],
+    [ "led1:A", "esp:40", "red", [ "h48.1", "v-64.05" ] ],
+    [ "r4:1", "esp:GND.1", "black", [ "h-0.85", "v28.8", "h192", "v0.18" ] ],
+    [ "btn1:2.r", "esp:18", "gray", [ "h38.6", "v29" ] ],
+    [ "led2:A", "esp:2", "green", [ "v2.08", "h29.73", "v-163.2" ] ],
+    [ "btn1:1.l", "r4:2", "black", [ "h0" ] ],
+    [ "r1:1", "esp:GND.4", "black", [ "v19.2", "h-42.97" ] ],
+    [ "r3:2", "esp:GND.4", "black", [ "v0" ] ],
+    [ "esp:4", "ldr1:DO", "green", [ "h-43.48", "v-0.18" ] ],
+    [ "ldr1:GND", "esp:GND.2", "black", [ "h57.6", "v-144.4", "h105.6", "v28.98" ] ],
+    [ "ldr1:VCC", "esp:5V", "red", [ "h57.6", "v192" ] ]
+  ],
+  "dependencies": {}
+}
