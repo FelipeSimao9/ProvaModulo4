@@ -2,40 +2,40 @@
 #include <HTTPClient.h>
 
 // Definições dos pinos
-#define GREEN_LED 2     // LED verde
-#define RED_LED 40      // LED vermelho
-#define YELLOW_LED 9    // LED amarelo
 #define BUTTON 18       // Botão pressionado
 #define LDR 4           // Sensor de luz
+#define GREEN_LED 2     // LED verde
+#define YELLOW_LED 9    // LED amarelo
+#define RED_LED 40      // LED vermelho
 
 // Constantes
-const int LIGHT_THRESHOLD = 600;  // Limite de intensidade para modo noturno
 const int DEBOUNCE_DELAY = 50;    // Tempo de debouncing em ms
+const int LIGHT_THRESHOLD = 600;  // Limite de intensidade para modo noturno
 const int GREEN_TIME = 3000;      // 3 segundos
 const int YELLOW_TIME = 2000;     // 2 segundos
 const int RED_TIME = 5000;        // 5 segundos
 
 // Variáveis globais
-unsigned long lastDebounceTime = 0;
-unsigned long lastYellowLedTime = 0;
-int lastButtonState = HIGH;
-int buttonPressCount = 0;
 unsigned long lastButtonTime = 0;
+unsigned long lastYellowLedTime = 0;
+unsigned long lastDebounceTime = 0;
+int buttonPressCount = 0;
+int lastButtonState = HIGH;
 
 void setup() {
-  // Configuração dos pinos
-  pinMode(GREEN_LED, OUTPUT);    // LED verde como saída
-  pinMode(RED_LED, OUTPUT);      // LED vermelho como saída
-  pinMode(YELLOW_LED, OUTPUT);   // LED amarelo como saída
-  pinMode(BUTTON, INPUT_PULLUP); // Botão com resistor pull-up
-  pinMode(LDR, INPUT);           // Sensor de luz como entrada
+  // Inicialização dos pinos
+  pinMode(BUTTON, INPUT_PULLUP);   // Botão com resistor pull-up
+  pinMode(LDR, INPUT);             // Sensor de luz como entrada
+  pinMode(GREEN_LED, OUTPUT);      // LED verde como saída
+  pinMode(YELLOW_LED, OUTPUT);     // LED amarelo como saída
+  pinMode(RED_LED, OUTPUT);        // LED vermelho como saída
 
   // Inicializa todos os LEDs apagados
   digitalWrite(GREEN_LED, LOW);
-  digitalWrite(RED_LED, LOW);
   digitalWrite(YELLOW_LED, LOW);
+  digitalWrite(RED_LED, LOW);
 
-  Serial.begin(9600);  // Inicializa a comunicação serial
+  Serial.begin(9600); // Inicializa a comunicação serial
 
   // Conexão WiFi
   Serial.print("Conectando ao WiFi");
@@ -51,16 +51,15 @@ void loop() {
   // Leitura do sensor de luz
   int lightReading = digitalRead(LDR);
 
+  // Verifica a intensidade da luz e entra no modo apropriado
   if (lightReading <= LIGHT_THRESHOLD) {
-    // Se a intensidade de luz for baixa, entra no modo noturno
-    nightMode();
+    modoNoturno();  // Modo noturno
   } else {
-    // Caso contrário, entra no modo diurno
-    dayMode();
+    modoDiurno();   // Modo diurno
   }
 }
 
-void nightMode() {
+void modoNoturno() {
   // Desliga os LEDs verde e vermelho
   digitalWrite(GREEN_LED, LOW);
   digitalWrite(RED_LED, LOW);
@@ -73,22 +72,22 @@ void nightMode() {
   }
 }
 
-void dayMode() {
-  static int state = 0;                // Variável para armazenar o estado do semáforo
-  static unsigned long previousTime = 0;
+void modoDiurno() {
+  static int estado = 0;                // Variável para armazenar o estado do semáforo
+  static unsigned long tempoAnterior = 0;
   unsigned long currentTime = millis();
 
   // Verifica o estado do botão com debounce
-  checkButton();
+  verificarBotao();
 
-  switch (state) {
+  switch (estado) {
     case 0: // Verde
       digitalWrite(GREEN_LED, HIGH);    // Acende o LED verde
       digitalWrite(YELLOW_LED, LOW);    // Apaga o LED amarelo
       digitalWrite(RED_LED, LOW);       // Apaga o LED vermelho
-      if (currentTime - previousTime >= GREEN_TIME) {
-        state = 1;                      // Muda para o próximo estado (amarelo)
-        previousTime = currentTime;
+      if (currentTime - tempoAnterior >= GREEN_TIME) {
+        estado = 1;                      // Muda para o próximo estado (amarelo)
+        tempoAnterior = currentTime;
       }
       break;
 
@@ -96,9 +95,9 @@ void dayMode() {
       digitalWrite(GREEN_LED, LOW);     // Apaga o LED verde
       digitalWrite(YELLOW_LED, HIGH);   // Acende o LED amarelo
       digitalWrite(RED_LED, LOW);       // Apaga o LED vermelho
-      if (currentTime - previousTime >= YELLOW_TIME) {
-        state = 2;                      // Muda para o próximo estado (vermelho)
-        previousTime = currentTime;
+      if (currentTime - tempoAnterior >= YELLOW_TIME) {
+        estado = 2;                      // Muda para o próximo estado (vermelho)
+        tempoAnterior = currentTime;
       }
       break;
 
@@ -106,48 +105,48 @@ void dayMode() {
       digitalWrite(GREEN_LED, LOW);     // Apaga o LED verde
       digitalWrite(YELLOW_LED, LOW);    // Apaga o LED amarelo
       digitalWrite(RED_LED, HIGH);      // Acende o LED vermelho
-      if (currentTime - previousTime >= RED_TIME) {
+      if (currentTime - tempoAnterior >= RED_TIME) {
         // Se o botão foi pressionado mais de 3 vezes, envia um alerta
         if (buttonPressCount >= 3) {
-          sendAlert();                 // Chama a função para enviar o alerta
-          buttonPressCount = 0;        // Reseta o contador de pressões
+          enviarAlerta();                // Envia o alerta
+          buttonPressCount = 0;          // Reseta o contador de pressões
         }
-        state = 0;                      // Volta ao estado inicial (verde)
-        previousTime = currentTime;
+        estado = 0;                      // Volta ao estado inicial (verde)
+        tempoAnterior = currentTime;
       }
       break;
   }
 }
 
-void checkButton() {
-  static int buttonState;
-  int reading = digitalRead(BUTTON);
+void verificarBotao() {
+  static int estadoBotao;
+  int leituraBotao = digitalRead(BUTTON);
 
-  // Verifica mudanças de estado do botão
-  if (reading != lastButtonState) {
-    lastDebounceTime = millis();     // Atualiza o tempo de debouncing
+  // Verifica se houve mudança de estado do botão
+  if (leituraBotao != lastButtonState) {
+    lastDebounceTime = millis();  // Atualiza o tempo de debouncing
   }
 
-  // Se passou o tempo de debouncing, processa a leitura
+  // Processa a leitura após o tempo de debouncing
   if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
-    if (reading != buttonState) {
-      buttonState = reading;
-      if (buttonState == LOW) {       // Se o botão foi pressionado
+    if (leituraBotao != estadoBotao) {
+      estadoBotao = leituraBotao;
+      if (estadoBotao == LOW) {       // Se o botão foi pressionado
         if (digitalRead(RED_LED)) {   // Se o LED vermelho está aceso
           buttonPressCount++;         // Incrementa o contador de pressões
           if (buttonPressCount == 1) {
             delay(1000);              // Espera 1 segundo após a primeira pressão
-            dayMode();                // Força a mudança para o modo verde
+            modoDiurno();             // Força a mudança para o modo verde
           }
         }
       }
     }
   }
 
-  lastButtonState = reading;         // Atualiza o estado do botão
+  lastButtonState = leituraBotao;     // Atualiza o estado do botão
 }
 
-void sendAlert() {
+void enviarAlerta() {
   // Função para enviar um alerta HTTP
   HTTPClient http;
   http.begin("http://www.google.com.br/");  // URL de exemplo para envio de alerta
